@@ -3,25 +3,25 @@ import re
 class vcd_reader:
     def __init__(self,file_name):
         """INIT function. signal_symbol dictionary and transition dictionary are created"""
-        self.signal_symbol,self.transitions=self.read_file(file_name)
+        self.transitions=self.read_file(file_name)
         #pass
         
     def read_file(self,file_name):
         """Parses the file and returns the signal-symbol pair and transition history"""
-        signal_symbol_dict={}
+        self.signal_symbol_dict={}
         transition_dict={}
-        current_scope=''
+        current_scope='' #indicates the current level, as to what level in the module we are
         with open(file_name) as f:
             file_content=f.readlines()
-            change_dump_started=0
+            change_dump_started=0 #indicates when to start reading the file
         for line_no in range(len(file_content)):
-            if re.match(r'^\$date',file_content[line_no]):
-                date=file_content[line_no+1]
-            if re.match(r'^\$version',file_content[line_no]):
+            if re.match('^\$date',file_content[line_no]):
+                self.date=file_content[line_no+1]
+            if re.match('^\$version',file_content[line_no]):
                 version=file_content[line_no+1]
-            if re.match(r'^\$timescale',file_content[line_no]):
-                timescale_string=file_content[line_no+1]
-                matchObj=re.match(r'^[\s\t]*(\d+)\s*(\w+)',timescale_string)
+            if re.match('^\$timescale',file_content[line_no]):
+                self.timescale_string=file_content[line_no+1]
+                matchObj=re.match('^[\s\t]*(\d+)\s*(\w+)',self.timescale_string)#[\s\t - indicates spaces or tabs, and * indicates may/may not exist, followed by a digit which may or may not be followed by spaces and w indicates word/character, can be alphanumeric or underscore
                 timescale_dict={'fs':1e-15,'ps':1e-12,'ns':1e-9,'us':1e-6,'ms':1e-3}
                 if matchObj:
                     timescale=float(matchObj.group(1))*timescale_dict[matchObj.group(2)]
@@ -29,7 +29,7 @@ class vcd_reader:
             matchObj=re.match(r'^\$scope\s+module\s+(\w+)\s+\$end',file_content[line_no])
             if matchObj:
                 current_scope=current_scope+'/'+matchObj.group(1)
-                print current_scope
+                #print current_scope
             matchObj=re.match(r'^\$upscope',file_content[line_no])
             if matchObj:
                 scopes=current_scope.split('/')
@@ -39,11 +39,12 @@ class vcd_reader:
                         current_scope=current_scope+'/'+scopes[scope]
                 print current_scope
             matchObj=re.match(r'^\$var\s+(\w+)\s+(\d+)\s+(\S+?)\s+(\S+)\s+\$end$', file_content[line_no])
+            #reading the lines starting with var and assigning to signal_symbol_dict
             if matchObj:
                 #print matchObj.group(3)
                 #print matchObj.group(2)
                 current_signal=current_scope+'/'+matchObj.group(4)
-                signal_symbol_dict[current_signal]=matchObj.group(3)
+                self.signal_symbol_dict[current_signal]=matchObj.group(3)
                 transition_dict[matchObj.group(3)]=[[],[]]
     
             matchObj=re.match(r'^\$dumpvars', file_content[line_no])
@@ -57,16 +58,16 @@ class vcd_reader:
             if matchObj:
                 timestamp=matchObj.group(1)
                 
-            matchObj=re.match(r'^(\S)(\S)$',file_content[line_no])
+            matchObj=re.match(r'^(\S)(\S)$',file_content[line_no])#capital S is non-space
             if matchObj and change_dump_started==1 and matchObj.group(2) in transition_dict.keys() and matchObj.group(1)!='#':
                 transition_dict[matchObj.group(2)][0].append(timestamp)
                 transition_dict[matchObj.group(2)][1].append(matchObj.group(1))               
             
-            matchObjBus=re.match(r'^b(\w+) (\S)$',file_content[line_no])
+            matchObjBus=re.match(r'^b(\w+) (\S)$',file_content[line_no])#make it S+ everywhere
             if matchObjBus and change_dump_started==1 and matchObjBus.group(2) in transition_dict.keys() and matchObjBus.group(1)!='#':
                 transition_dict[matchObjBus.group(2)][0].append(timestamp)
                 transition_dict[matchObjBus.group(2)][1].append(matchObjBus.group(1)) 
-        return signal_symbol_dict,transition_dict 
+        return transition_dict 
 
     def symbols(self,array_of_names):
         """Returns a dictionary with signal-symbol pairs
@@ -74,7 +75,7 @@ class vcd_reader:
         For eg. query for ['/clk'] and not ['clk']"""
         dict_to_return={}
         for item in array_of_names:
-            dict_to_return[item]=self.signal_symbol[item]
+            dict_to_return[item]=self.signal_symbol_dict[item]
         return dict_to_return
     def transitions(self):
         pass
