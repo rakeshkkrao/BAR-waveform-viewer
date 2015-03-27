@@ -1,5 +1,7 @@
 \documentclass{beamer}
-\usetheme{Warsaw}
+\usetheme{PaloAlto}
+
+\usepackage{graphicx}
 \begin{document}
 \title{Web-browser based VCD waveform viewer}
 \author{Krupa Bathia \\Apurv Mittal \\Rakesh K K}
@@ -9,7 +11,7 @@
 
 \frame{\frametitle{Project Objective}
 	\begin{itemize}
-		\item To create a web-browser based VCD waveform viewer with basic functionalities 
+		\item To create a \textbf{web-browser based VCD waveform viewer} with basic functionalities 
 		\begin{itemize}
 			\item Displaying the hierarchy
 			\item Selecting the signals to be plotted
@@ -30,7 +32,7 @@
 	\begin{itemize}
 		\item Python 2.7.x
 		\item SVG (Scalable vector Graphics) file format
-		\item Python packages: svgwrite 
+		\item Python packages: svgwrite, PyGTK
 		\item Google app engine
 	\end{itemize}
 }
@@ -53,8 +55,14 @@
 	\begin{itemize}
 		\item Representing data in SVG format
 		\item Integrating the SVG file in the app using python
-		\item To make the GUI
+		\item To make the GUI and integrate it with the browser
 	\end{itemize}
+	\begin{figure}[htp]
+\centering
+\includegraphics[scale=0.30]{barvcdviewer.png}
+%\caption{VCD viewer}
+\label{}
+\end{figure}
 }
 
 \end{document}
