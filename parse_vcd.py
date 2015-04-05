@@ -63,6 +63,11 @@ class vcd_reader:
                 #print current_scope
             matchObj=re.match(r'^\$upscope',file_content[line_no])
             if matchObj:
+                try:
+                    print self.timescale_string
+                except NameError:
+                    print "Timescale not defined"
+
                 scopes=current_scope.split('/')
                 current_scope=''
                 for scope in range(len(scopes)-1):
