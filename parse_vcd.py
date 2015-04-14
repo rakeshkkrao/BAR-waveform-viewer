@@ -28,21 +28,22 @@ class vcd_reader:
         vcd_file.time_query_transitions(array,start_time,stop_time) --> Transitions between start and stop for given signals
         vcd_file.value_at(array_of_names,timestamp=1) --> returns value at timestamp for all the queried signals
     """
-    def __init__(self,file_name):
+    def __init__(self,file_content):
         """INIT function for vcd_reader class. 
         Calls read_file function and parses the entire file.
         mainly, 9signal_symbol dictionary and transition dictionary are created"""
-        self.transitions_dict=self.read_file(file_name)
+        self.transitions_dict=self.read_file(file_content)
         #pass
         
-    def read_file(self,file_name):
+    def read_file(self,file_content):
         """Parses the file and returns the signal-symbol pair and transition history"""
         self.signal_symbol_dict={}
         transition_dict={}
         current_scope='' #indicates the current level, as to what level in the module we are
-        with open(file_name) as f:
-            file_content=f.readlines()
-            change_dump_started=0 #indicates when to start reading the file
+        change_dump_started=0 #indicates when to start reading the file
+        #with open(file_name) as f:
+            #file_content=f.readlines()
+            #change_dump_started=0 #indicates when to start reading the file
         for line_no in range(len(file_content)):
             if re.match('^\$date',file_content[line_no]):
                 self.date=file_content[line_no+1]
