@@ -74,7 +74,7 @@ class vcd_reader:
                 for scope in range(len(scopes)-1):
                     if scopes[scope]!='':
                         current_scope=current_scope+'/'+scopes[scope]
-                print current_scope
+                #print current_scope
             matchObj=re.match(r'^\$var\s+(\w+)\s+(\d+)\s+(\S+?)\s+(\S+)\s+\$end$', file_content[line_no])
             #reading the lines starting with var and assigning to signal_symbol_dict
             if matchObj:
@@ -165,3 +165,29 @@ class vcd_reader:
             dict_to_return[sig]=value
         return dict_to_return
         
+    def create_json_to_display_waveforms(self,array_of_names,signal_symbol_dict,transitions_dict):
+        dict_to_return={}
+        json_string='{"type":"line","dataPoints":[';
+        voltage_val=0;
+        for name in array_of_names:
+            json_string='{"type":"line","dataPoints":[';
+            symbol=self.signal_symbol_dict[name]
+            x_y_pairs=[]
+            for i in range(len(self.transitions_dict[symbol][0])-1):
+                #print self.transitions_dict[symbol][1][i]
+                x_y_pairs.append((self.transitions_dict[symbol][0][i],str(int(self.transitions_dict[symbol][1][i])+voltage_val)))
+                x_y_pairs.append((self.transitions_dict[symbol][0][i+1],str(int(self.transitions_dict[symbol][1][i])+voltage_val)))
+            x_y_pairs.append((self.transitions_dict[symbol][0][len(self.transitions_dict[symbol][0])-1],str(int(self.transitions_dict[symbol][1][len(self.transitions_dict[symbol][0])-1])+voltage_val)))
+            x_y_pairs.append((self.end_time,str(int(self.transitions_dict[symbol][1][len(self.transitions_dict[symbol][0])-1])+voltage_val)))
+            #print x_y_pairs
+            for time,val in x_y_pairs:
+                json_string=json_string+'{"x":'+str(time)+',"y":'+val+'}'
+                if x_y_pairs[-1]==(time,val):
+                    break
+                else:
+                    json_string=json_string+','
+            json_string=json_string+']}'
+            print json_string
+            voltage_val=voltage_val+1.25
+            dict_to_return[name]=json_string
+        return(dict_to_return)
