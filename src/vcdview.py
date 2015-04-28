@@ -3,8 +3,10 @@ import urllib
 import cgi
 import StringIO
 import re
+import webapp2
 #from parse_vcd import *
-import json
+#import json
+from django.utils import simplejson as json
 #import webapp2
 
 #from google.appengine.api import users
@@ -23,7 +25,7 @@ from google.appengine.ext.webapp import template
   #  when = db.DateTimeProperty(auto_now_add=True)
 
 
-class MainPage(webapp.RequestHandler):
+class MainPage(webapp2.RequestHandler):
     def get(self):
         upload_url = blobstore.create_upload_url('/upload')
         # The method must be "POST" and enctype must be set to "multipart/form-data".
@@ -99,6 +101,8 @@ class ServeHandler(blobstore_handlers.BlobstoreDownloadHandler):
             }
             path = os.path.join(os.path.dirname(__file__),'index.htm')
             self.response.out.write(template.render(path, template_values))
+            #template = JINJA_ENVIRONMENT.get_template('index.htm')
+            #self.response.write(template.render(template_values))
             #self.response.out.write(json.dumps(signal_dict))
             #self.send_blob(blobstore.BlobInfo.get(blob_key), save_as=True)
 
@@ -286,10 +290,8 @@ class vcd_reader:
                         matchObj=re.match(r'^.+\d+\]$', name)
                         if matchObj:
                             bus=1
-                            print name, bus
                         else:
                             bus=0
-                            print name, bus
                         json_string='{"name":"'+name+'","showInLegend": "true",'
 			json_string=json_string+'"type":"line","dataPoints":['
 			symbol=self.signal_symbol_dict[name]
@@ -313,10 +315,12 @@ class vcd_reader:
                         previous_val=x_y_pairs[0][1]
 			for time,val in x_y_pairs:
                             if bus==0:
-				if time == 0:
-					json_string=json_string+'{"x":'+str(time/1000000)+',"y":'+val+',"indexLabel": "'+name+'","indexLabelLineThickness":1}'
-				else:
-					json_string=json_string+'{"x":'+str(time/1000000)+',"y":'+val+'}'
+				#if time == 0 and val ==0:
+				#	json_string=json_string+'{"x":'+str(time/1000000)+',"y":'+val+',"indexLabel": "'+name+'","indexLabelLineThickness":1,"indexLabelMaxWidth": 1 }'
+				#elif time ==0 and val != 0:
+				#	json_string=json_string+'{"x":'+str(time/1000000)+',"y":'+val+',"indexLabel": "'+name+'","indexLabelLineThickness":1,"indexLabelMaxWidth": 1, "indexLabelPlacement": "inside" }'
+				#else:
+				json_string=json_string+'{"x":'+str(time/1000000)+',"y":'+val+'}'
 				if x_y_pairs[-1]==(time,val):
 					break
 				else:
@@ -326,15 +330,15 @@ class vcd_reader:
                                 bus_val=hex(int(str(int(float(val))),2))
                                 #bus_val='0'
                                 #print bus_val
-                                if time == 0:
-	        		     json_string=json_string+'{"x":'+str(time/1000000)+',"y":'+str(bus_bit+voltage_val)+',"indexLabel": "'+name+'","indexLabelLineThickness":1,"indexLabelMaxWidth": 1, "indexLabelPlacement": "inside"}'
+                                #if time == 0:
+	        		#     json_string=json_string+'{"x":'+str(time/1000000)+',"y":'+str(bus_bit+voltage_val)+',"indexLabel": "'+name+'","indexLabelLineThickness":1,"indexLabelMaxWidth": 1, "indexLabelPlacement": "inside"}'
 	        		     #json_string=json_string+'{"x":'+str((time/1000000)+5)+',"y":'+str(bus_bit+voltage_val)+',"indexLabel": "'+bus_val+'","indexLabelLineThickness":1,"indexLabelMaxWidth": 1, "indexLabelPlacement": "inside"}'
-				else:
-				    if previous_val!=val:
+				#else:
+			        if previous_val!=val:
                                         bus_bit=1-bus_bit
-                                    else:
+                                else:
                                         bus_val=''
-				    json_string=json_string+'{"x":'+str(time/1000000)+',"y":'+str(bus_bit+voltage_val)+',"indexLabel": "'+bus_val+'","indexLabelLineThickness":1,"indexLabelMaxWidth": 1, "indexLabelPlacement": "inside"}'
+				json_string=json_string+'{"x":'+str(time/1000000)+',"y":'+str(bus_bit+voltage_val)+',"indexLabel": "'+bus_val+'","indexLabelLineThickness":1,"indexLabelMaxWidth": 1, "indexLabelPlacement": "inside"}'
                                 
                                 previous_val=val
                                     
