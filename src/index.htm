@@ -19,7 +19,8 @@
 	
 	{ view: 'Label', rect: '1000 100 50 500', anchors: 'left top', name: 'target' }
 	]).attachTo(window);
-	var data = {{signals|safe}}
+	var data = {{ signals|safe }}
+	
 	uki('#source List')
 	.data(data)
 	.dragstart(function(e) {
@@ -51,7 +52,8 @@
 	
 	for(i=0;i<selected.length;i++)
 	{
-		var jsonkb = {{trans_details|safe}}[selected[i]];
+		var jsonkb = {{ trans_details|safe }}[selected[i]];
+		
 		//alert(jsonkb);
 		data1.push(JSON.parse(jsonkb));
 	}
@@ -96,6 +98,6 @@
 			//var uniquedata = data1.filter(function(item, i, ar){ return ar.indexOf(item) === i; });
 			displaybar(data1);}
 	</script>	</br>
-<div id="chartContainer" style="height: 500px; width: 950px ;">
+<div id="chartContainer" style="height: 550px; width: 950px ;">
 </body>
 </html>

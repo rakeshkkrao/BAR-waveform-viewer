@@ -3,8 +3,10 @@ import urllib
 import cgi
 import StringIO
 import re
+import webapp2
 #from parse_vcd import *
-import json
+#import json
+from django.utils import simplejson as json
 #import webapp2
 
 #from google.appengine.api import users
@@ -23,7 +25,7 @@ from google.appengine.ext.webapp import template
   #  when = db.DateTimeProperty(auto_now_add=True)
 
 
-class MainPage(webapp.RequestHandler):
+class MainPage(webapp2.RequestHandler):
     def get(self):
         upload_url = blobstore.create_upload_url('/upload')
         # The method must be "POST" and enctype must be set to "multipart/form-data".
@@ -99,6 +101,8 @@ class ServeHandler(blobstore_handlers.BlobstoreDownloadHandler):
             }
             path = os.path.join(os.path.dirname(__file__),'index.htm')
             self.response.out.write(template.render(path, template_values))
+            #template = JINJA_ENVIRONMENT.get_template('index.htm')
+            #self.response.write(template.render(template_values))
             #self.response.out.write(json.dumps(signal_dict))
             #self.send_blob(blobstore.BlobInfo.get(blob_key), save_as=True)
 
@@ -295,10 +299,12 @@ class vcd_reader:
 			x_y_pairs.append((self.end_time,str(int(self.transitions_dict[symbol][1][len(self.transitions_dict[symbol][0])-1])+voltage_val)))
 			# creating string in json object
 			for time,val in x_y_pairs:
-				if time == 0:
-					json_string=json_string+'{"x":'+str(time/1000000)+',"y":'+val+',"indexLabel": "'+name+'","indexLabelLineThickness":1}'
-				else:
-					json_string=json_string+'{"x":'+str(time/1000000)+',"y":'+val+'}'
+				#if time == 0 and val ==0:
+				#	json_string=json_string+'{"x":'+str(time/1000000)+',"y":'+val+',"indexLabel": "'+name+'","indexLabelLineThickness":1,"indexLabelMaxWidth": 1 }'
+				#elif time ==0 and val != 0:
+				#	json_string=json_string+'{"x":'+str(time/1000000)+',"y":'+val+',"indexLabel": "'+name+'","indexLabelLineThickness":1,"indexLabelMaxWidth": 1, "indexLabelPlacement": "inside" }'
+				#else:
+				json_string=json_string+'{"x":'+str(time/1000000)+',"y":'+val+'}'
 				if x_y_pairs[-1]==(time,val):
 					break
 				else:
