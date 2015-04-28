@@ -336,18 +336,39 @@ class vcd_reader:
 				#else:
 			        if previous_val!=val:
                                         bus_bit=1-bus_bit
+                                        time=time+1000000
                                 else:
+                                    if time!=x_y_pairs[-1][0] and time!=x_y_pairs[0][0]:
+                                        time=time-1000000
                                         bus_val=''
+                                        
 				json_string=json_string+'{"x":'+str(time/1000000)+',"y":'+str(bus_bit+voltage_val)+',"indexLabel": "'+bus_val+'","indexLabelLineThickness":1,"indexLabelMaxWidth": 1, "indexLabelPlacement": "inside"}'
                                 
                                 previous_val=val
-                                    
-				if x_y_pairs[-1]==(time,val):
-					break
-				else:
-					json_string=json_string+','
-
-			json_string=json_string+']}'
+				#if x_y_pairs[-1]==(time,val):
+				#	break
+				#else:
+				json_string=json_string+','
+                        if bus==0:
+			    json_string=json_string+']}'
+                        else:
+                            bus_bit=1-bus_bit
+                            for time,val in reversed(x_y_pairs):
+                                
+                                if previous_val!=val:
+                                        bus_bit=1-bus_bit
+                                        time=time-1000000
+                                        if time<0:
+                                            time=0
+                                else:
+                                    if time!=x_y_pairs[-1][0] and time!=x_y_pairs[0][0]:
+                                        time=time+1000000
+                                json_string=json_string+'{"x":'+str(time/1000000)+',"y":'+str(bus_bit+voltage_val)+'}'
+                                previous_val=val
+                                if time!=x_y_pairs[0][0]:
+                                    json_string=json_string+','
+                                else:
+                                    json_string=json_string+']}'
 			#print json_string
 			voltage_val=voltage_val+1.25
 			dict_to_return[name]=json_string
