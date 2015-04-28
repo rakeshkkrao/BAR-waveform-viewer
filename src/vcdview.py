@@ -80,7 +80,7 @@ class ServeHandler(blobstore_handlers.BlobstoreDownloadHandler):
             signals = signal_dict.keys() #The value of all the signals
             signal_values = signal_dict.values()
             transacting_signals = transaction_dict.keys()
-            display_array=['/dut/clk','/dut/data_path', '/inputs_ready', '/dut/quotient[16:0]', '/dut/divider_ready', '/i', '/dut/inputs_ready', '/output_accept']
+            #display_array=['/dut/clk','/dut/data_path', '/inputs_ready', '/dut/quotient[16:0]', '/dut/divider_ready', '/i', '/dut/inputs_ready', '/output_accept']
             trans_details=vcdread.create_json_to_display_waveforms(signals,vcdread.signal_symbol_dict,vcdread.transitions_dict)
             display_signals=trans_details.keys()
             display_values=trans_details.values()
@@ -92,7 +92,7 @@ class ServeHandler(blobstore_handlers.BlobstoreDownloadHandler):
             'signal_values':signal_values,
             'transacting_signals':transacting_signals,
             'trans_details':trans_details,
-            'display_array':display_array,
+            #'display_array':display_array,
             'display_signals':display_signals,
             'display_values':display_values,
             'x':x,
@@ -295,7 +295,10 @@ class vcd_reader:
 			x_y_pairs.append((self.end_time,str(int(self.transitions_dict[symbol][1][len(self.transitions_dict[symbol][0])-1])+voltage_val)))
 			# creating string in json object
 			for time,val in x_y_pairs:
-				json_string=json_string+'{"x":'+str(time)+',"y":'+val+'}'
+				if time == 0:
+					json_string=json_string+'{"x":'+str(time/1000000)+',"y":'+val+',"indexLabel": "'+name+'","indexLabelLineThickness":1}'
+				else:
+					json_string=json_string+'{"x":'+str(time/1000000)+',"y":'+val+'}'
 				if x_y_pairs[-1]==(time,val):
 					break
 				else:

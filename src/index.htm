@@ -1,14 +1,12 @@
 <!DOCTYPE HTML>
 <html>
 <head>
-	<title>Signal Selection</title>
+	<title>BAR waveform viewer</title>
 	<script type="text/javascript" src="http://canvasjs.com/assets/script/canvasjs.min.js"> </script>
 	<script type="text/javascript" src="http://static.ukijs.org/pkg/0.1.0a1/uki.js"></script>	
     
 </head>
 <body>
-	
-	<input type="hidden" id="myVar" name="display_array" value="{{display_array}}">
 	<script type="text/javascript">
 		
 		uki([
@@ -53,8 +51,7 @@
 	
 	for(i=0;i<selected.length;i++)
 	{
-		var onesignal = selected[i];
-		var jsonkb = {{trans_details|safe}}[onesignal];
+		var jsonkb = {{trans_details|safe}}[selected[i]];
 		//alert(jsonkb);
 		data1.push(JSON.parse(jsonkb));
 	}
@@ -76,21 +73,28 @@
   //     verticalAlign: "center",  // "top" , "bottom"
 
      },
+     
+			      axisX:{
+			title: "Time (in micro seconds)",
+				},
             axisY:{
                 includeZero: true,
+                tickLength: 0,
+                gridThickness: 0,
                 interval : 1.25,
                 labelFontColor : "white"
+                //gridColor: "white"
             },
-            data: data1,  // random generator below
+            data: data1,
             });
             chart.render();
             }
 
 			window.onload = function() {
 				var data1= [];
-				data1.push(JSON.parse(jsonkb));
-				var uniquedata = data1.filter(function(item, i, ar){ return ar.indexOf(item) === i; });
-			displaybar(uniquedata);}
+			data1.push(JSON.parse(jsonkb));
+			//var uniquedata = data1.filter(function(item, i, ar){ return ar.indexOf(item) === i; });
+			displaybar(data1);}
 	</script>	</br>
 <div id="chartContainer" style="height: 500px; width: 950px ;">
 </body>
