@@ -167,27 +167,68 @@ class vcd_reader:
         
     def create_json_to_display_waveforms(self,array_of_names,signal_symbol_dict,transitions_dict):
         dict_to_return={}
-        json_string='{"type":"line","dataPoints":[';
         voltage_val=0;
+        #json_string=json_string+'{"type":"line","dataPoints":[';       
         for name in array_of_names:
-            json_string='{"type":"line","dataPoints":[';
-            symbol=self.signal_symbol_dict[name]
-            x_y_pairs=[]
-            for i in range(len(self.transitions_dict[symbol][0])-1):
-                #print self.transitions_dict[symbol][1][i]
-                x_y_pairs.append((self.transitions_dict[symbol][0][i],str(int(self.transitions_dict[symbol][1][i])+voltage_val)))
-                x_y_pairs.append((self.transitions_dict[symbol][0][i+1],str(int(self.transitions_dict[symbol][1][i])+voltage_val)))
-            x_y_pairs.append((self.transitions_dict[symbol][0][len(self.transitions_dict[symbol][0])-1],str(int(self.transitions_dict[symbol][1][len(self.transitions_dict[symbol][0])-1])+voltage_val)))
-            x_y_pairs.append((self.end_time,str(int(self.transitions_dict[symbol][1][len(self.transitions_dict[symbol][0])-1])+voltage_val)))
-            #print x_y_pairs
-            for time,val in x_y_pairs:
-                json_string=json_string+'{"x":'+str(time)+',"y":'+val+'}'
-                if x_y_pairs[-1]==(time,val):
-                    break
-                else:
-                    json_string=json_string+','
-            json_string=json_string+']}'
-            print json_string
-            voltage_val=voltage_val+1.25
-            dict_to_return[name]=json_string
-        return(dict_to_return)
+                        matchObj=re.match(r'^.+\d+\]$', name)
+                        if matchObj:
+                            bus=1
+                            print name, bus
+                        else:
+                            bus=0
+                            print name, bus
+                        json_string='{"name":"'+name+'","showInLegend": "true",'
+			json_string=json_string+'"type":"line","dataPoints":['
+			symbol=self.signal_symbol_dict[name]
+			x_y_pairs=[]
+			for i in range(len(self.transitions_dict[symbol][0])-1):
+				#print self.transitions_dict[symbol][1][i]
+			     if bus==0:
+				x_y_pairs.append((self.transitions_dict[symbol][0][i],str(int(self.transitions_dict[symbol][1][i])+voltage_val)))
+				x_y_pairs.append((self.transitions_dict[symbol][0][i+1],str(int(self.transitions_dict[symbol][1][i])+voltage_val)))
+			     else:
+				x_y_pairs.append((self.transitions_dict[symbol][0][i],str(int(self.transitions_dict[symbol][1][i]))))
+				x_y_pairs.append((self.transitions_dict[symbol][0][i+1],str(int(self.transitions_dict[symbol][1][i]))))
+			if bus==0:
+			     x_y_pairs.append((self.transitions_dict[symbol][0][len(self.transitions_dict[symbol][0])-1],str(int(self.transitions_dict[symbol][1][len(self.transitions_dict[symbol][0])-1])+voltage_val)))
+			     x_y_pairs.append((self.end_time,str(int(self.transitions_dict[symbol][1][len(self.transitions_dict[symbol][0])-1])+voltage_val)))
+			else:
+			     x_y_pairs.append((self.transitions_dict[symbol][0][len(self.transitions_dict[symbol][0])-1],str(int(self.transitions_dict[symbol][1][len(self.transitions_dict[symbol][0])-1]))))
+			     x_y_pairs.append((self.end_time,str(int(self.transitions_dict[symbol][1][len(self.transitions_dict[symbol][0])-1]))))
+			# creating string in json object
+                        bus_bit=0
+                        previous_val=x_y_pairs[0][1]
+			for time,val in x_y_pairs:
+                            if bus==0:
+				if time == 0:
+					json_string=json_string+'{"x":'+str(time/1000000)+',"y":'+val+',"indexLabel": "'+name+'","indexLabelLineThickness":1}'
+				else:
+					json_string=json_string+'{"x":'+str(time/1000000)+',"y":'+val+'}'
+				if x_y_pairs[-1]==(time,val):
+					break
+				else:
+					json_string=json_string+','
+                            else:
+                                
+                                bus_val=hex(int(str(int(float(val))),2))
+                                #bus_val='0'
+                                #print bus_val
+                                if previous_val!=val:
+                                    bus_bit=1-bus_bit
+                                if time == 0:
+					json_string=json_string+'{"x":'+str(time/1000000)+',"y":'+str(bus_bit+voltage_val)+',"indexLabel": "'+name+'","indexLabelLineThickness":1}'
+				else:
+					json_string=json_string+'{"x":'+str(time/1000000)+',"y":'+str(bus_bit+voltage_val)+',"indexLabel": "'+bus_val+'","indexLabelLineThickness":1}'
+                                
+                                previous_val=val
+                                    
+				if x_y_pairs[-1]==(time,val):
+					break
+				else:
+					json_string=json_string+','
+
+			json_string=json_string+']}'
+			print json_string
+			voltage_val=voltage_val+1.25
+			dict_to_return[name]=json_string
+	return(dict_to_return)

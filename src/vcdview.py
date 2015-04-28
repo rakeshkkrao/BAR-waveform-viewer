@@ -283,18 +283,36 @@ class vcd_reader:
         voltage_val=0;
         #json_string=json_string+'{"type":"line","dataPoints":[';       
         for name in array_of_names:
-			json_string='{"name":"'+name+'","showInLegend": "true",'
+                        matchObj=re.match(r'^.+\d+\]$', name)
+                        if matchObj:
+                            bus=1
+                            print name, bus
+                        else:
+                            bus=0
+                            print name, bus
+                        json_string='{"name":"'+name+'","showInLegend": "true",'
 			json_string=json_string+'"type":"line","dataPoints":['
 			symbol=self.signal_symbol_dict[name]
 			x_y_pairs=[]
 			for i in range(len(self.transitions_dict[symbol][0])-1):
 				#print self.transitions_dict[symbol][1][i]
+			     if bus==0:
 				x_y_pairs.append((self.transitions_dict[symbol][0][i],str(int(self.transitions_dict[symbol][1][i])+voltage_val)))
 				x_y_pairs.append((self.transitions_dict[symbol][0][i+1],str(int(self.transitions_dict[symbol][1][i])+voltage_val)))
-			x_y_pairs.append((self.transitions_dict[symbol][0][len(self.transitions_dict[symbol][0])-1],str(int(self.transitions_dict[symbol][1][len(self.transitions_dict[symbol][0])-1])+voltage_val)))
-			x_y_pairs.append((self.end_time,str(int(self.transitions_dict[symbol][1][len(self.transitions_dict[symbol][0])-1])+voltage_val)))
+			     else:
+				x_y_pairs.append((self.transitions_dict[symbol][0][i],str(int(self.transitions_dict[symbol][1][i]))))
+				x_y_pairs.append((self.transitions_dict[symbol][0][i+1],str(int(self.transitions_dict[symbol][1][i]))))
+			if bus==0:
+			     x_y_pairs.append((self.transitions_dict[symbol][0][len(self.transitions_dict[symbol][0])-1],str(int(self.transitions_dict[symbol][1][len(self.transitions_dict[symbol][0])-1])+voltage_val)))
+			     x_y_pairs.append((self.end_time,str(int(self.transitions_dict[symbol][1][len(self.transitions_dict[symbol][0])-1])+voltage_val)))
+			else:
+			     x_y_pairs.append((self.transitions_dict[symbol][0][len(self.transitions_dict[symbol][0])-1],str(int(self.transitions_dict[symbol][1][len(self.transitions_dict[symbol][0])-1]))))
+			     x_y_pairs.append((self.end_time,str(int(self.transitions_dict[symbol][1][len(self.transitions_dict[symbol][0])-1]))))
 			# creating string in json object
+                        bus_bit=0
+                        previous_val=x_y_pairs[0][1]
 			for time,val in x_y_pairs:
+                            if bus==0:
 				if time == 0:
 					json_string=json_string+'{"x":'+str(time/1000000)+',"y":'+val+',"indexLabel": "'+name+'","indexLabelLineThickness":1}'
 				else:
@@ -303,8 +321,30 @@ class vcd_reader:
 					break
 				else:
 					json_string=json_string+','
+                            else:
+                                
+                                bus_val=hex(int(str(int(float(val))),2))
+                                #bus_val='0'
+                                #print bus_val
+                                if time == 0:
+	        		     json_string=json_string+'{"x":'+str(time/1000000)+',"y":'+str(bus_bit+voltage_val)+',"indexLabel": "'+name+'","indexLabelLineThickness":1,"indexLabelMaxWidth": 1, "indexLabelPlacement": "inside"}'
+	        		     #json_string=json_string+'{"x":'+str((time/1000000)+5)+',"y":'+str(bus_bit+voltage_val)+',"indexLabel": "'+bus_val+'","indexLabelLineThickness":1,"indexLabelMaxWidth": 1, "indexLabelPlacement": "inside"}'
+				else:
+				    if previous_val!=val:
+                                        bus_bit=1-bus_bit
+                                    else:
+                                        bus_val=''
+				    json_string=json_string+'{"x":'+str(time/1000000)+',"y":'+str(bus_bit+voltage_val)+',"indexLabel": "'+bus_val+'","indexLabelLineThickness":1,"indexLabelMaxWidth": 1, "indexLabelPlacement": "inside"}'
+                                
+                                previous_val=val
+                                    
+				if x_y_pairs[-1]==(time,val):
+					break
+				else:
+					json_string=json_string+','
+
 			json_string=json_string+']}'
-			print json_string
+			#print json_string
 			voltage_val=voltage_val+1.25
 			dict_to_return[name]=json_string
 	return(dict_to_return)
